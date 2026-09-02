@@ -12,7 +12,7 @@ namespace HabitLogger.Services
         {
             _connection = connetion;
         }
-        public void InitializeHabitTable()
+        public void InitializeTables()
         {
             Console.WriteLine("starting InitializeTable.cs");
 
@@ -35,8 +35,7 @@ namespace HabitLogger.Services
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Habit TEXT NOT NULL,
                         Quantity INTEGER NOT NULL,
-                        TimeStamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY(Habit) REFERENCES Habits(Name)
+                        TimeStamp DATETIME DEFAULT CURRENT_TIMESTAMP
                     );
                 ";
                 using var createTableCommand = new SqliteCommand(createTableQuery2, _connection);
@@ -51,7 +50,7 @@ namespace HabitLogger.Services
             {
                 _connection.Close();
             }
-            
+
         }
 
         public void SeedTable()
@@ -74,7 +73,8 @@ namespace HabitLogger.Services
 
                 Console.WriteLine($"Table seeded: Inserted {SeeTableCommand.ExecuteNonQuery()} Habits, Press any key to continue...");
 
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine("Error seeding Habits table: " + ex.Message);
             }
@@ -82,6 +82,33 @@ namespace HabitLogger.Services
             {
                 _connection.Close();
             }
+        }
+
+        public void ResetDataBase()
+        {
+            try
+            {
+                _connection.Open();
+
+                var dropTable = "DROP TABLE IF EXISTS Habits";
+                var command = new SqliteCommand(dropTable, _connection);
+                command.ExecuteNonQuery();
+
+                dropTable = "DROP TABLE IF EXISTS HabitLogEnty";
+
+                command = new SqliteCommand(dropTable, _connection);
+                command.ExecuteNonQuery();
+
+                InitializeTables();
+            }catch(Exception ex)
+            {
+                Console.WriteLine("There was an error resetting the database: " + ex.Message);
+            }
+            finally
+            {
+                _connection.Close();
+            }
+
         }
     }
 }

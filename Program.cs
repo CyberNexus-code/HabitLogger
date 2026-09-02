@@ -18,21 +18,22 @@ Console.WriteLine("Checking Tables...");
 
 var table = new InitializeTable(connection);
 
-table.InitializeHabitTable();
+table.InitializeTables();
 table.SeedTable();
 
 
 var repository = new HabitRepository(connection);
-var HabitUI = new HabitUI(repository);
+var manageHabitsUI = new ManageHabitsUI(repository);
+var manageLogEntriesUI = new ManageLogEntriesUI(repository);
+var optionsUI = new OptionsUI(manageHabitsUI, manageLogEntriesUI);
 
-var menu = new Menu();
-Console.Clear();
+var mainMenu = new MainMenu();
 
 while (true)
 {
     Console.Clear();
 
-    if (menu.RenderMenu(HabitUI))
+    if (mainMenu.RenderMenu(optionsUI, manageLogEntriesUI))
     {
         break;
     }

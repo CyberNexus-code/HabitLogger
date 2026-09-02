@@ -6,11 +6,13 @@ namespace HabitLogger.Entities
 {
     internal class Habit
     {
+        public int Id;
         public string Name { get; private set; }
         public string Measurement { get; private set; }
 
-        public Habit(string name, string measurement)
+        public Habit(int id, string name, string measurement)
         {
+            Id = id;
             Name = name;
             Measurement = measurement;
         }

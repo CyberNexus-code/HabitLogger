@@ -1,5 +1,6 @@
 ﻿using HabitLogger.Entities;
 using Microsoft.Data.Sqlite;
+using Spectre.Console;
 
 namespace HabitLogger.Services
 {
@@ -51,7 +52,7 @@ namespace HabitLogger.Services
 
                 while (read.Read())
                 {
-                    Habit habit = new Habit(read.GetString(1), read.GetString(2));
+                    Habit habit = new Habit(Int32.Parse(read.GetString(0)), read.GetString(1), read.GetString(2));
                     habitList.Add(habit);
                 }
             }
@@ -81,7 +82,11 @@ namespace HabitLogger.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error deleting Habit: {name} from Habits table. ", ex.Message);
+                Console.WriteLine($"Error deleting habit '{name}' from Habits table:" + ex.Message + "\nPress any key to continue...");
+            }
+            finally
+            {
+                _connection.Close();
             }
         }
 
@@ -101,12 +106,14 @@ namespace HabitLogger.Services
 
                 command.Parameters.AddWithValue("@NewName", habit.Name);
                 command.Parameters.AddWithValue("@measurement", habit.Measurement);
+                command.Parameters.AddWithValue("@selectedHabit", selectedhabit);
 
                 command.ExecuteNonQuery();
             }
             catch (Exception ex)
             {
-                throw new Exception("Error updating the selected Habit: " + ex.Message);
+                AnsiConsole.MarkupLine("There was an error updating the habit: " + ex.Message + "\nPress any key to return to the menu...");
+                Console.ReadKey();
             }
             finally
             {
@@ -124,7 +131,7 @@ namespace HabitLogger.Services
                             + "VALUES (@Habit, @Quantity, @TimeStamp)";
 
                 var command = new SqliteCommand(query, _connection);
-                command.Parameters.AddWithValue("@Habit", habit.Name);
+                command.Parameters.AddWithValue("@Habit", habit.Id);
                 command.Parameters.AddWithValue("@Quantity", quantity);
                 command.Parameters.AddWithValue("@TimeStamp", timeStamp);
                 command.ExecuteNonQuery();
@@ -156,7 +163,7 @@ namespace HabitLogger.Services
 
                 while (read.Read())
                 {
-                    var habit = habits.Where(x => x.Name == read.GetString(1)).First();
+                    var habit = habits.Where(x => x.Id.ToString() == read.GetString(0)).First();
                     var habitLog = new HabitLogEntry(habit, Int32.Parse(read.GetString(2)), DateTime.Parse(read.GetString(3)));
                     logEntries.Add(habitLog);
                 }
