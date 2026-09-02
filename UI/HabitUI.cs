@@ -8,11 +8,13 @@ namespace HabitLogger.UI
     {
         private readonly HabitRepository _habitRepository;
         private List<Habit> _habits;
+        private List<HabitLogEntry> _habitLogs;
 
         public HabitUI(HabitRepository repository)
         {
             _habitRepository = repository;
             RefreshHabits();
+            RefreshHabitLogs();
         }
 
         public void AddHabit()
@@ -89,12 +91,33 @@ namespace HabitLogger.UI
                 .ValidationErrorMessage("[red]Please enter a valid date and time.[/]"));
 
             _habitRepository.CreateHabitLogEntry(choice, quantity, time);
+            RefreshHabitLogs();
         }
 
 
         public void ViewHabitLog()
         {
+            Console.Clear();
 
+            var table = new Table()
+                .AddColumn("Id")
+                .AddColumn("Habit")
+                .AddColumn("Quantity")
+                .AddColumn("Measurement")
+                .AddColumn("TimeStamp");
+
+            int id = 1;
+
+            _habitLogs.ForEach(x =>
+            {
+                table.AddRow(id.ToString(), x.Habit.Name, x.Quantity.ToString(), x.Habit.Measurement, x.TimeEntry.ToString());
+                id++;
+
+            });
+
+            AnsiConsole.Write(table);
+            AnsiConsole.MarkupLine("Press any key to return to the menu...");
+            Console.ReadKey();
         }
         public void DeleteHabit()
         {
@@ -112,6 +135,11 @@ namespace HabitLogger.UI
         public void RefreshHabits()
         {
             _habits = _habitRepository.GetHabits();
+        }
+
+        public void RefreshHabitLogs()
+        {
+            _habitLogs = _habitRepository.GetHabitLogEntries(_habits);
         }
 
     }

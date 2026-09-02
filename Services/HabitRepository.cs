@@ -1,8 +1,5 @@
 ﻿using HabitLogger.Entities;
 using Microsoft.Data.Sqlite;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace HabitLogger.Services
 {
@@ -117,7 +114,7 @@ namespace HabitLogger.Services
             }
         }
 
-        public void CreateHabitLogEntry(Habit habit,int quantity, DateTime timeStamp)
+        public void CreateHabitLogEntry(Habit habit, int quantity, DateTime timeStamp)
         {
             try
             {
@@ -131,9 +128,44 @@ namespace HabitLogger.Services
                 command.Parameters.AddWithValue("@Quantity", quantity);
                 command.Parameters.AddWithValue("@TimeStamp", timeStamp);
                 command.ExecuteNonQuery();
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception("Problem creating new habit Log Entry: " + ex.Message);
+            }
+            finally
+            {
+                _connection.Close();
+            }
+        }
+
+        public List<HabitLogEntry> GetHabitLogEntries(List<Habit> habits)
+        {
+            try
+            {
+
+                List<HabitLogEntry> logEntries = new();
+
+                _connection.Open();
+
+                var query = @"SELECT * FROM HabitLogEntry ORDER BY Timestamp DESC";
+
+                var command = new SqliteCommand(query, _connection);
+
+                var read = command.ExecuteReader();
+
+                while (read.Read())
+                {
+                    var habit = habits.Where(x => x.Name == read.GetString(1)).First();
+                    var habitLog = new HabitLogEntry(habit, Int32.Parse(read.GetString(2)), DateTime.Parse(read.GetString(3)));
+                    logEntries.Add(habitLog);
+                }
+
+                return logEntries;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting habbit log entries" + ex.Message);
             }
             finally
             {

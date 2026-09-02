@@ -23,6 +23,7 @@ namespace HabitLogger.UI
         AddHabit,
         CreateHabitEntry,
         ViewHabits,
+        ViewHabitLogs,
         DeleteHabit,
         Exit
     }

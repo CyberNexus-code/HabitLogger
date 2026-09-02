@@ -17,6 +17,9 @@ namespace HabitLogger.Services
                 case MenuOptions.ViewHabits:
                     habit.ViewHabits();
                     break;
+                case MenuOptions.ViewHabitLogs:
+                    habit.ViewHabitLog();
+                    break;
                 case MenuOptions.DeleteHabit:
                     habit.DeleteHabit();
                     break;
