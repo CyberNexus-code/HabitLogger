@@ -26,7 +26,8 @@ A simple console-based habit tracking application built with c#, .NET and Spectr
 ### Installation
 
 Clone the repostitory:
-```bash git clone https://github.com/Cybernexus-code/HabitLogger.git
+```
+bash git clone https://github.com/Cybernexus-code/HabitLogger.git
 ```
 
 Navigate to the project
