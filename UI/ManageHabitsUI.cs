@@ -24,39 +24,21 @@ namespace HabitLogger.UI
             {
                 Console.Clear();
 
-                var choice = AnsiConsole.Prompt(
-                    new SelectionPrompt<HabitOptionsUI>()
-                    .Title("What do you want to do?")
-                    .UseConverter(x => x switch
-                    {
-                        HabitOptionsUI.ViewHabits => "View Habits",
-                        HabitOptionsUI.deleteHabit => "Delete a Habit",
-                        HabitOptionsUI.back => "back to main Menu",
-                        _ => throw new ArgumentOutOfRangeException("Invalid menu option")
-                    })
-                    .AddChoices(Enum.GetValues<HabitOptionsUI>()));
+                var choice = ViewHabits();
 
                 switch (choice)
                 {
-                    case HabitOptionsUI.ViewHabits:
-                        var action = ViewHabits();
-                        switch (action)
-                        {
-                            case HabitAction.Add:
-                                AddHabit();
-                                break;
-                            case HabitAction.Edit:
-                                EditHabit();
-                                break;
-                            case HabitAction.Back:
-                                Console.Clear();
-                                return;
-                        }
+                    case HabitAction.Add:
+                        AddHabit();
                         break;
-                    case HabitOptionsUI.deleteHabit:
+                    case HabitAction.Edit:
+                        EditHabit();
+                        break;
+                    case HabitAction.Delete:
                         DeleteHabit();
                         break;
-                    case HabitOptionsUI.back:
+                    case HabitAction.Back:
+                        Console.Clear();
                         return;
                 }
             }
@@ -114,6 +96,7 @@ namespace HabitLogger.UI
                 {
                     HabitAction.Add => "Add a new Habit",
                     HabitAction.Edit => "Edit an existing Habit",
+                    HabitAction.Delete => "Delete an existing Habit",
                     HabitAction.Back => "Return to the previous menu"
                 })
                 .AddChoices(Enum.GetValues<HabitAction>()));
@@ -138,18 +121,11 @@ namespace HabitLogger.UI
             _habits = _habitRepository.GetHabits();
         }
     }
-
-    enum HabitOptionsUI
-    {
-        ViewHabits,
-        deleteHabit,
-        back
-    }
-
     enum HabitAction
     {
         Add,
         Edit,
+        Delete,
         Back
     }
 }

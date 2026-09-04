@@ -7,35 +7,30 @@ namespace HabitLogger.Entities
 {
     internal class HabitLogEntry
     {
+        public int Id { get; private set; }
         public Habit Habit { get; private set; }
         public int Quantity { get; private set; }
-        public DateTime TimeEntry { get; private set; } = DateTime.UtcNow;
+        public DateTime TimeEntry { get; private set; } = DateTime.Now;
 
-        public HabitLogEntry(Habit habit, int quantity, DateTime timeEntry)
+        public HabitLogEntry(int id, Habit habit, int quantity, DateTime timeEntry)
+        {
+            Id = id;
+            Habit = habit;
+            Quantity = quantity;
+            TimeEntry = timeEntry;
+        }
+
+        public void UpdateHabit(Habit habit)
         {
             Habit = habit;
-            Quantity = ValidateQuantity(quantity);
-            TimeEntry = ValidateTimeEntry(timeEntry);
         }
-
-        private DateTime ValidateTimeEntry(DateTime timeEntry)
+        public void UpdateQuantity(string newQuantity)
         {
-            if (timeEntry > DateTime.UtcNow)
-            {
-                throw new ArgumentOutOfRangeException("The time entry cannot be in the future.");
-            }
-
-            return timeEntry;
+            Quantity = string.IsNullOrWhiteSpace(newQuantity) ? Quantity : int.Parse(newQuantity);
         }
-
-        private int ValidateQuantity(int quantity)
-        {
-            if (quantity <= 0)
-            {
-                throw new ArgumentException("Please enter a quantity greater than 0 for your Habit.");
-            }
-
-            return quantity;
+        public void UpdateTimeStamp(DateTime timestamp)
+        {          
+            TimeEntry = timestamp == DateTime.MinValue ? TimeEntry : timestamp;
         }
     }
 }

@@ -33,7 +33,7 @@ while (true)
 {
     Console.Clear();
 
-    if (mainMenu.RenderMenu(optionsUI, manageLogEntriesUI))
+    if (mainMenu.RenderMenu(optionsUI, manageLogEntriesUI, repository))
     {
         break;
     }

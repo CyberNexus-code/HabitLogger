@@ -35,7 +35,8 @@ namespace HabitLogger.Services
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Habit TEXT NOT NULL,
                         Quantity INTEGER NOT NULL,
-                        TimeStamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                        TimeStamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY(Habit) References Habits(id) ON DELETE CASCADE
                     );
                 ";
                 using var createTableCommand = new SqliteCommand(createTableQuery2, _connection);
@@ -83,32 +84,6 @@ namespace HabitLogger.Services
                 _connection.Close();
             }
         }
-
-        public void ResetDataBase()
-        {
-            try
-            {
-                _connection.Open();
-
-                var dropTable = "DROP TABLE IF EXISTS Habits";
-                var command = new SqliteCommand(dropTable, _connection);
-                command.ExecuteNonQuery();
-
-                dropTable = "DROP TABLE IF EXISTS HabitLogEnty";
-
-                command = new SqliteCommand(dropTable, _connection);
-                command.ExecuteNonQuery();
-
-                InitializeTables();
-            }catch(Exception ex)
-            {
-                Console.WriteLine("There was an error resetting the database: " + ex.Message);
-            }
-            finally
-            {
-                _connection.Close();
-            }
-
-        }
+             
     }
 }

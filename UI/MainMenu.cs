@@ -5,9 +5,12 @@ namespace HabitLogger.UI
 {
     internal class MainMenu
     {
-        public bool RenderMenu(OptionsUI optionsUi, ManageLogEntriesUI manageLogEntriesUi)
+        public bool RenderMenu(OptionsUI optionsUi, ManageLogEntriesUI manageLogEntriesUi, HabitRepository habitRepository)
         {
             Console.Clear();
+
+            AnsiConsole.MarkupLine("[Blue]Todays Logged habits:[/]");
+            manageLogEntriesUi.ViewHabitLogTable(habitRepository.GetLogEntryByDate(DateTime.Today));
 
             var choice = AnsiConsole.Prompt(
             new SelectionPrompt<MenuOptions>()
@@ -25,7 +28,6 @@ namespace HabitLogger.UI
                 case MenuOptions.Exit:
                     return true;
             }
-
             return false;
         }
     }

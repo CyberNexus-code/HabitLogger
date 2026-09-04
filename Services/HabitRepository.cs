@@ -30,7 +30,7 @@ namespace HabitLogger.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error inserting habbbit into Habits table: " + ex.Message);
+                AnsiConsole.MarkupLine($"[red]Error inserting habbbit into Habits table: {ex.Message} [/]");
             }
             finally
             {
@@ -58,7 +58,7 @@ namespace HabitLogger.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Trouble getting Habits: " + ex.Message);
+                AnsiConsole.MarkupLine($"[red]Trouble getting Habits: {ex.Message}[/]");
             }
             finally
             {
@@ -82,7 +82,7 @@ namespace HabitLogger.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error deleting habit '{name}' from Habits table:" + ex.Message + "\nPress any key to continue...");
+                AnsiConsole.MarkupLine($"[red]Error deleting habit '{name}' from Habits table: {ex.Message}[/]\nPress any key to continue...");
             }
             finally
             {
@@ -138,7 +138,7 @@ namespace HabitLogger.Services
             }
             catch (Exception ex)
             {
-                throw new Exception("Problem creating new habit Log Entry: " + ex.Message);
+                AnsiConsole.MarkupLine($"[red]Problem creating new habit Log Entry: {ex.Message} [/]");
             }
             finally
             {
@@ -146,12 +146,12 @@ namespace HabitLogger.Services
             }
         }
 
-        public List<HabitLogEntry> GetHabitLogEntries(List<Habit> habits)
+        public List<HabitLogEntry> GetHabitLogEntries()
         {
+            List<HabitLogEntry> logEntryList = new();
             try
             {
-
-                List<HabitLogEntry> logEntries = new();
+                var habits = GetHabits();
 
                 _connection.Open();
 
@@ -161,23 +161,112 @@ namespace HabitLogger.Services
 
                 var read = command.ExecuteReader();
 
-                while (read.Read())
-                {
-                    var habit = habits.Where(x => x.Id.ToString() == read.GetString(0)).First();
-                    var habitLog = new HabitLogEntry(habit, Int32.Parse(read.GetString(2)), DateTime.Parse(read.GetString(3)));
-                    logEntries.Add(habitLog);
-                }
-
-                return logEntries;
+                return logEntryList = BuildHabitLogFromReader(read, habits);
             }
             catch (Exception ex)
             {
-                throw new Exception("Error getting habbit log entries" + ex.Message);
+                AnsiConsole.MarkupLine($"[red]Error getting habbit log entries {ex.Message} [/]");
+                return logEntryList;
             }
             finally
             {
                 _connection.Close();
             }
+        }
+
+        public List<HabitLogEntry> GetLogEntryByDate(DateTime dateTime)
+        {
+            List<HabitLogEntry> logEntryList = new();
+            try
+            {
+                var habits = GetHabits();
+
+                _connection.Open();
+
+                var query = @"SElECT * FROM HabitLogEntry WHERE Timestamp >= @dateTime ORDER BY Timestamp DESC";
+
+                var command = new SqliteCommand(query, _connection);
+                command.Parameters.AddWithValue("@dateTime", dateTime);
+                var read = command.ExecuteReader();
+
+                return logEntryList = BuildHabitLogFromReader(read, habits);
+            }catch(Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[red]error getting habit log entries for the specified date: {dateTime.ToString()}, {ex.Message}[/]" +
+                    $"\nPress any key to continue...");
+                Console.ReadKey();
+                return logEntryList;
+            }
+            finally
+            {
+                _connection.Close();
+            }
+        }
+        public void EditHabitLogEntry(HabitLogEntry habitLogEntry, Habit newHabit, string newQuantity, DateTime newTimeStamp)
+        {
+            try
+            {
+                habitLogEntry.UpdateHabit(newHabit);
+                habitLogEntry.UpdateQuantity(newQuantity);
+                habitLogEntry.UpdateTimeStamp(newTimeStamp);
+
+                _connection.Open();
+
+                var query = @"UPDATE HabitLogEntry SET habit = @habit, quantity = @quantity, timestamp = @timestamp WHERE Id = @id";
+                var command = new SqliteCommand(query, _connection);
+
+                command.Parameters.AddWithValue("@habit", habitLogEntry.Habit.Id);
+                command.Parameters.AddWithValue("@quantity", habitLogEntry.Quantity);
+                command.Parameters.AddWithValue("@timestamp", habitLogEntry.TimeEntry);
+                command.Parameters.AddWithValue("@id", habitLogEntry.Id);
+
+                command.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[red]Error updating the selecte log entry: ${ex.Message}[/]\n Press any key to continue...");
+                Console.ReadKey();
+            }
+            finally
+            {
+                _connection.Close();
+            }
+        }
+
+        public void DeleteLogEntry(HabitLogEntry logEntry)
+        {
+            try
+            {
+                _connection.Open();
+
+                var query = @"DELETE FROM HabitLogEntry WHERE Id = @id";
+
+                var command = new SqliteCommand(query, _connection);
+                command.Parameters.AddWithValue("@id", logEntry.Id);
+                command.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[red]Failed to delete the log entry: {ex.Message}[red]");
+            }
+            finally
+            {
+                _connection.Close();
+            }
+        }
+
+        public List<HabitLogEntry> BuildHabitLogFromReader(SqliteDataReader reader, List<Habit> habits)
+        {
+            List<HabitLogEntry> logEntries = new();
+
+            while (reader.Read())
+            {
+                var habit = habits.Where(x => x.Id.ToString() == reader.GetString(1)).First();
+                var habitLog = new HabitLogEntry(Int32.Parse(reader.GetString(0)), habit, Int32.Parse(reader.GetString(2)), DateTime.Parse(reader.GetString(3)));
+                logEntries.Add(habitLog);
+            }
+
+            return logEntries;
         }
     }
 }
