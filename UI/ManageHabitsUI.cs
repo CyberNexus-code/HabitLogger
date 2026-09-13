@@ -50,10 +50,18 @@ namespace HabitLogger.UI
             var name = AnsiConsole.Ask<string>("Please enter a new Habit name");
             var measurement = AnsiConsole.Ask<string>("How will this habits quantity be measured? (e.g. Glass... of water)");
 
-            _habitRepository.AddHabbit(name, measurement);
+            if(_habitRepository.AddHabit(name, measurement) > 0)
+            {
+                AnsiConsole.MarkupLine($"[Green] Habit: {name} has been successfully added to the available habits[/]\nPress any key to continue...");
+                Console.ReadKey();
+                RefreshHabits();
+            }
+            else
+            {
+                AnsiConsole.MarkupLine($"[red]A habit with that name already exists.[/]\nPress any key to continue...");
+                Console.ReadKey();
+            }
 
-            AnsiConsole.MarkupLine($"[Green] Habbit: {name} has been successfully added to the available habits[/]");
-            RefreshHabits();
         }
 
         public void EditHabit()
@@ -111,8 +119,16 @@ namespace HabitLogger.UI
                 .UseConverter(habit => $"{habit.Name} - {habit.Measurement}")
                 .AddChoices(_habits));
 
-            _habitRepository.DeleteHabit(choice.Name);
-            Console.ReadKey();
+            var confirmation = AnsiConsole.Prompt(new SelectionPrompt<string>()
+                .Title($"Are you sure you want to delete Habit: '{choice}'?")
+                .AddChoices("Yes", "No"));
+
+            if(confirmation == "Yes")
+            {
+                _habitRepository.DeleteHabit(choice.Name);
+                AnsiConsole.MarkupLine($"[red]{choice} has been deleted.\nPress any key to continue...");
+                Console.ReadKey();
+            }
 
             RefreshHabits();
         }

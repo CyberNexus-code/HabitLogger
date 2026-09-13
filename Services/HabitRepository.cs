@@ -13,7 +13,7 @@ namespace HabitLogger.Services
             _connection = connection;
         }
 
-        public void AddHabbit(string name, string measurement)
+        public int AddHabit(string name, string measurement)
         {
             try
             {
@@ -26,11 +26,12 @@ namespace HabitLogger.Services
                 var command = new SqliteCommand(query, _connection);
                 command.Parameters.AddWithValue("@name", name);
                 command.Parameters.AddWithValue("@measurement", measurement);
-                command.ExecuteNonQuery();
+                return command.ExecuteNonQuery();
             }
             catch (Exception ex)
             {
                 AnsiConsole.MarkupLine($"[red]Error inserting habbbit into Habits table: {ex.Message} [/]");
+                return 0;
             }
             finally
             {

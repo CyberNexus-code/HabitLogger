@@ -92,7 +92,7 @@ namespace HabitLogger.UI
         }
 
 
-        public void ViewHabitLogTable(List<HabitLogEntry> habitLogs)
+        public void ViewHabitLogTable(List<HabitLogEntry> habits)
         {
             RefreshHabitLogs();
 
@@ -104,7 +104,7 @@ namespace HabitLogger.UI
                 .AddColumn("TimeStamp");
 
 
-            habitLogs.ForEach(x =>
+            _habitLogs.ForEach(x =>
             {
                 table.AddRow(x.Id.ToString(), x.Habit.Name, x.Quantity.ToString(), x.Habit.Measurement, x.TimeEntry.ToString());
             });
